@@ -1,0 +1,56 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-Inter: Inter, sans-serif;
+
+  /* Colors */
+
+  /* Primary */
+
+  --color-primary-10: #0099FF;
+
+  /* secondary */
+  --color-secondary-10: #1a1f2c;
+  --color-secondary-20: #262b35;
+  --color-secondary-30: #232323;
+  --color-secondary-40: #313642;
+  --color-secondary-50: #020817;
+  --color-secondary-60: #0a1222;
+
+  /* neutral */
+  --color-neutral-10: #fcfcfc;
+  --color-neutral-15: #fafcfd;
+  --color-neutral-20: #f5f5f5;
+  --color-neutral-30: #d8d8d8;
+  --color-neutral-40: #bababa;
+  --color-neutral-50: #b3b3b3;
+  --color-neutral-60: #aaaaaa;
+  --color-neutral-65: #979797;
+  --color-neutral-70: #616161;
+  --color-neutral-80: #272727;
+  --color-neutral-85: #c7c7c726;
+  --color-neutral-90: #727272;
+}
+
+/* dropdownAnimation.css */
+
+.dropdown-enter {
+  opacity: 0;
+  transform: translateY(-10%);
+}
+.dropdown-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms, transform 200ms;
+}
+.dropdown-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+.dropdown-exit-active {
+  opacity: 0;
+  transform: translateY(-10%);
+  transition: opacity 200ms, transform 200ms;
+}
