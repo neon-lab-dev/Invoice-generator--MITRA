@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -40,9 +41,9 @@ const Login = () => {
       } else {
         toast.error("Invalid credentials");
       }
-    } catch (error) {
+    } catch (error:any) {
       console.error("Login failed", error);
-      toast.error("An error occurred. Please try again.");
+      toast.error(error?.response?.data?.message || "An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -120,10 +121,10 @@ const Login = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className={`w-full rounded-md px-4 py-2 font-medium text-white transition-all duration-300 cursor-pointer ${
+            className={`w-full rounded-md px-4 py-2 font-medium text-white cursor-pointer active:scale-95 transition-all duration-300 ease-in-out transform hover:scale-105 ${
               isLoading
                 ? "bg-primary-10/60 cursor-not-allowed"
-                : "bg-primary-10 hover:bg-[#244F5B] active:scale-95"
+                : "bg-primary-10 hover:bg-primary-10/80 active:scale-95"
             }`}
             disabled={isLoading}
           >

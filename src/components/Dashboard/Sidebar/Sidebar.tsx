@@ -30,7 +30,7 @@ const Sidebar = () => {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="p-3 hover:bg-primary-10/60 transition-colors self-end"
+        className="p-3 hover:bg-primary-10/60 transition-colors self-end cursor-pointer"
       >
         {isOpen ? <FiChevronLeft size={20} /> : <FiChevronRight size={20} />}
       </button>
@@ -44,11 +44,14 @@ const Sidebar = () => {
             <Link
               key={link.name}
               to={link.path}
-              className={`flex items-center gap-3 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${
+              className={`flex items-center gap-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${
                 isActive
                   ? "bg-primary-10/30 text-primary-10 font-semibold"
                   : "hover:bg-primary-10/80 text-white"
-              }`}
+              }
+              
+              ${!isOpen ? "px-1" : "px-4"}
+              `}
             >
               {/* Show Icon always */}
               <span>{link.icon}</span>

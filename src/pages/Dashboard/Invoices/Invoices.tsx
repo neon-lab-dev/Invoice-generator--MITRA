@@ -143,7 +143,7 @@ const Invoices = () => {
           className={`rounded-md px-4 py-2 font-medium text-white cursor-pointer bg-primary-10 hover:bg-primary-10/90 active:scale-95 transition-all duration-300 ease-in-out transform hover:scale-105`}
           onClick={() => setIsAddPeopleModalOpen(true)}
         >
-          Add People
+          Create Invoice
         </button>
       </div>
 
@@ -304,7 +304,7 @@ const Invoices = () => {
       )}
 
       {isAddPeopleModalOpen && (
-        <AddInvoiceModal onClose={() => setIsModalOpen(false)} />
+        <AddInvoiceModal onClose={() => setIsAddPeopleModalOpen(false)} />
       )}
     </div>
   );

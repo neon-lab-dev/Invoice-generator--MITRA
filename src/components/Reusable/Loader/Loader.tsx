@@ -6,7 +6,7 @@ const Loader = ({ size = 40 }: LoaderProps) => {
   const style = {
     width: `${size}px`,
     height: `${size}px`,
-    borderTopColor: "#2b6473",
+    borderTopColor: "#0099FF",
   };
 
   return (

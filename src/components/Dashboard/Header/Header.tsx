@@ -38,7 +38,7 @@ const Header = () => {
       {/* Right side: logout button */}
       <button
         type="button"
-        className={`rounded-md px-4 w-[100px] py-2 font-medium text-white cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${
+        className={`rounded-md px-4 w-[200px] py-2 font-medium text-white cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${
           isLoading
             ? "bg-primary-10/60 cursor-not-allowed"
             : "bg-primary-10 hover:bg-primary-100 active:scale-95"
@@ -46,7 +46,7 @@ const Header = () => {
         disabled={isLoading}
         onClick={handleLogout}
       >
-        {isLoading ? "Signing Out..." : "Logout"}
+        {isLoading ? "Logging Out..." : "Logout"}
       </button>
     </div>
   );

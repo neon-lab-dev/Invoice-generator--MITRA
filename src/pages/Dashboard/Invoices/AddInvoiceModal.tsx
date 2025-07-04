@@ -77,9 +77,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
         >
           <FiX size={20} />
         </button>
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Add People
-        </h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Add People</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
