@@ -4,10 +4,10 @@ import { useForm } from "react-hook-form";
 import { FiX } from "react-icons/fi";
 import type { TUser } from "../../../types/users.types";
 import TextInput from "../../../components/Reusable/TextInput/TextInput";
-import { toast } from "sonner";
+// import { toast } from "sonner";
 import Loader from "../../../components/Reusable/Loader/Loader";
-import axios from "axios";
-import Cookies from "js-cookie";
+// import axios from "axios";
+// import Cookies from "js-cookie";
 
 interface UpdateInvoiceModalProps {
   userId: string;
@@ -42,28 +42,28 @@ const UpdateInvoiceModal: React.FC<UpdateInvoiceModalProps> = ({
     }
   }, [user, setValue]);
 
-  const handleUpdateUser = async (userId: string, formData: FormData) => {
-    const toastId = toast.loading("Updating user...");
-    const token = Cookies.get("accessToken");
+  // const handleUpdateUser = async (userId: string, formData: FormData) => {
+  //   const toastId = toast.loading("Updating user...");
+  //   const token = Cookies.get("accessToken");
 
-    try {
-      await axios.put(
-        `https://admin-delta-rosy.vercel.app/api/people/${userId}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      );
+  //   try {
+  //     await axios.put(
+  //       `https://admin-delta-rosy.vercel.app/api/people/${userId}`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         withCredentials: true,
+  //       }
+  //     );
 
-      toast.success("User updated successfully", { id: toastId });
-    } catch (error) {
-      toast.error("Something went wrong!", { id: toastId });
-      console.error("Update Error:", error);
-    }
-  };
+  //     toast.success("User updated successfully", { id: toastId });
+  //   } catch (error) {
+  //     toast.error("Something went wrong!", { id: toastId });
+  //     console.error("Update Error:", error);
+  //   }
+  // };
 
   const onSubmit = async (data: any) => {
     const formData = new FormData();
@@ -78,7 +78,7 @@ const UpdateInvoiceModal: React.FC<UpdateInvoiceModalProps> = ({
       formData.append("file", data.file[0]);
     }
 
-    await handleUpdateUser(user?.id || "", formData);
+    // await handleUpdateUser(user?.id || "", formData);
     onClose();
     window.location.reload();
   };
@@ -110,7 +110,7 @@ const UpdateInvoiceModal: React.FC<UpdateInvoiceModalProps> = ({
             <FiX size={20} />
           </button>
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            Update user details
+            Update Invoice
           </h2>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {user?.photo && (
@@ -178,7 +178,7 @@ const UpdateInvoiceModal: React.FC<UpdateInvoiceModalProps> = ({
               type="submit"
               className="w-full rounded-md bg-primary-10 hover:bg-[#244F5B] active:scale-95 px-4 py-2 text-white font-medium transition duration-300 cursor-pointer"
             >
-              Update User
+              Update Invoice
             </button>
           </form>
         </div>

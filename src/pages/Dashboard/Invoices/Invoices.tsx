@@ -5,9 +5,10 @@ import type { TUser } from "../../../types/users.types";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 import Loader from "../../../components/Reusable/Loader/Loader";
-import axios from "axios";
+// import axios from "axios";
 import UpdateInvoiceModal from "./UpdateInvoiceModal";
 import AddInvoiceModal from "./AddInvoiceModal";
+import axios from "axios";
 
 const Invoices = () => {
   const { register, watch } = useForm({ defaultValues: { search: "" } });
@@ -48,7 +49,7 @@ const Invoices = () => {
     }
   };
 
-  // Fetch all users
+ 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -300,6 +301,8 @@ const Invoices = () => {
           onClose={() => setIsModalOpen(false)}
           user={selectedUser}
           isFetchingUserById={isFetchingUserById}
+          
+          
         />
       )}
 
