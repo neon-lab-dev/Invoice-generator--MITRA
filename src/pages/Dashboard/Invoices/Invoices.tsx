@@ -1,19 +1,20 @@
 import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { FiMoreVertical, FiTrash2, FiEdit2 } from "react-icons/fi";
-import type { TUser } from "../../../types/users.types";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 import Loader from "../../../components/Reusable/Loader/Loader";
 import UpdateInvoiceModal from "./UpdateInvoiceModal";
 import AddInvoiceModal from "./AddInvoiceModal";
 import axios from "axios";
+import type { TInvoice } from "../../../types/invoicedata.types";
+import type { TUser } from "../../../types/users.types";
 
 const Invoices = () => {
   const { register, watch } = useForm({ defaultValues: { search: "" } });
   const searchTerm = watch("search");
   const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const [users, setUsers] = useState<TUser[]>([]);
+  const [users, setUsers] = useState<TInvoice[]>([]);
   const [loading, setLoading] = useState(false);
   const [isFetchingUserById, setIsFetchingUserById] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
@@ -73,21 +74,21 @@ const Invoices = () => {
           name: "John Doe",
           email: "john@example.com",
           createdAt: "2024-12-01",
-          invoice: "linkedin.com/in/johndoe",
+          invoice: "kjsndubvjancjsancue",
         },
         {
           id: "2",
           name: "Jane Smith",
           email: "jane@example.com",
           createdAt: "2024-11-15",
-          invoice: "https://linkedin.com/in/janesmith",
+          invoice: "kdjbiudbvjdfvn",
         },
         {
           id: "3",
           name: "Arjun Mehta",
           email: "arjun@example.com",
           createdAt: "2025-01-10",
-          invoice: "linkedin.com/in/arjunmehta",
+          invoice: "kjdsffvjdsnfvjnj",
         },
       ]);
       } catch (err) {
