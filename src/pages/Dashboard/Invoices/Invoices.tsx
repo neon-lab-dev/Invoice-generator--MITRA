@@ -5,7 +5,6 @@ import type { TUser } from "../../../types/users.types";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 import Loader from "../../../components/Reusable/Loader/Loader";
-// import axios from "axios";
 import UpdateInvoiceModal from "./UpdateInvoiceModal";
 import AddInvoiceModal from "./AddInvoiceModal";
 import axios from "axios";
@@ -15,7 +14,7 @@ const Invoices = () => {
   const searchTerm = watch("search");
   const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [users, setUsers] = useState<TUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [isFetchingUserById, setIsFetchingUserById] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -27,6 +26,7 @@ const Invoices = () => {
   // Fetch user by ID
   const fetchUserById = async (userId: string) => {
     setIsFetchingUserById(true);
+    console.log(userId)
 
     try {
       const res = await axios.get(
@@ -39,6 +39,9 @@ const Invoices = () => {
         }
       );
       setSelectedUser(res.data?.data);
+      
+      
+   
       setIsModalOpen(true);
     } catch (err) {
       console.error("Failed to fetch user by ID:", err);
@@ -53,16 +56,40 @@ const Invoices = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get(
-          "https://admin-delta-rosy.vercel.app/api/people",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            withCredentials: true,
-          }
-        );
-        setUsers(res.data?.data);
+        // const res = await axios.get(
+        //   "https://admin-delta-rosy.vercel.app/api/people",
+        //   {
+        //     headers: {
+        //       Authorization: `Bearer ${token}`,
+        //     },
+        //     withCredentials: true,
+        //   }
+        // );
+        // setUsers(res.data?.data);
+        
+        setUsers([
+        {
+          id: "1",
+          name: "John Doe",
+          email: "john@example.com",
+          createdAt: "2024-12-01",
+          invoice: "linkedin.com/in/johndoe",
+        },
+        {
+          id: "2",
+          name: "Jane Smith",
+          email: "jane@example.com",
+          createdAt: "2024-11-15",
+          invoice: "https://linkedin.com/in/janesmith",
+        },
+        {
+          id: "3",
+          name: "Arjun Mehta",
+          email: "arjun@example.com",
+          createdAt: "2025-01-10",
+          invoice: "linkedin.com/in/arjunmehta",
+        },
+      ]);
       } catch (err) {
         console.error("Failed to fetch users:", err);
       } finally {
@@ -201,14 +228,14 @@ const Invoices = () => {
                    <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200 hover:underline">
                     <a
                       href={
-                        user?.linkedInUrl?.startsWith("http")
-                          ? user.linkedInUrl
-                          : `https://${user?.linkedInUrl}`
+                        user?.invoice?.startsWith("http")
+                          ? user.invoice
+                          : `https://${user?.invoice}`
                       }
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {user?.linkedInUrl}
+                      {user?.invoice}
                     </a>
                   </td>
                   <td className="relative px-4 py-3 text-sm border-b border-gray-200">
