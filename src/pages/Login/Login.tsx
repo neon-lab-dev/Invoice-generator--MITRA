@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import axios from "axios";
+import axios from "axios";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 // import { toast } from "sonner";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
-  // const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
@@ -24,34 +25,33 @@ const Login = () => {
     formState: { errors },
   } = useForm<{ email: string; password: string }>();
 
-  // const onSubmit = async (data: { email: string; password: string }) => {
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await axios.post(
-  //       "https://admin-delta-rosy.vercel.app/api/auth/login",
-  //       data,
-  //       { withCredentials: true }
-  //     );
-  //     console.log(response);
-  //     if (response?.data?.success) {
-  //       Cookies.set("accessToken", response?.data?.data?.accessToken, {
-  //         expires: 2,
-  //       });
-  //       navigate("/dashboard/users");
-  //     } else {
-  //       toast.error("Invalid credentials");
-  //     }
-  //   } catch (error: any) {
-  //     console.error("Login failed", error);
-  //     toast.error(
-  //       error?.response?.data?.message || "An error occurred. Please try again."
-  //     );
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+  const onSubmit = async (data: { email: string; password: string }) => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post(
+        "https://invoice-chi-five.vercel.app/api/v1/login",
+        data,
+        { withCredentials: true }
+      );
+      console.log(response);
+      if (response?.data?.success) {
+        Cookies.set("accessToken", response?.data?.data?.accessToken, {
+          expires: 2,
+        });
+        navigate("/dashboard/invoices");
+      } else {
+        toast.error("Invalid credentials");
+      }
+    } catch (error: any) {
+      console.error("Login failed", error);
+      toast.error(
+        error?.response?.data?.message || "An error occurred. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const testSubmit = () => {navigate("/dashboard/users");}
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-white via-gray-100 to-gray-200 w-full p-4">
       <div className="mx-auto w-full max-w-md space-y-2 rounded-xl border border-primary-10/30 bg-white/70 backdrop-blur-lg p-8 shadow-xl">
@@ -62,7 +62,7 @@ const Login = () => {
           Please login to continue
         </p>
 
-        <form onSubmit={handleSubmit(testSubmit)} className="space-y-6 mt-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-6">
           {/* Email Field */}
           <div className="space-y-2 text-sm">
             <label htmlFor="email" className="block text-gray-700 font-medium">
@@ -130,9 +130,9 @@ const Login = () => {
                 : "bg-primary-10 hover:bg-primary-10/80 active:scale-95"
             }
             `}
-            // disabled={isLoading}
+            disabled={isLoading}
           >
-            {/* {isLoading ? "Signing In..." : "Login"} */}{"Login"}
+            {isLoading ? "Signing In..." : "Login"}
           </button>
         </form>
       </div>
