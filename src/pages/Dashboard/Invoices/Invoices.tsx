@@ -14,7 +14,7 @@ const Invoices = () => {
   const { register, watch } = useForm({ defaultValues: { search: "" } });
   const searchTerm = watch("search");
   const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const [users, setUsers] = useState<TInvoice[]>([]);
+  const [invoices, setInvoices] = useState<TInvoice[]>([]);
   const [loading, setLoading] = useState(false);
   const [isFetchingUserById, setIsFetchingUserById] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
@@ -39,6 +39,7 @@ const Invoices = () => {
           withCredentials: true,
         }
       );
+
       setSelectedUser(res.data?.data);
       
       
@@ -53,53 +54,36 @@ const Invoices = () => {
     }
   };
 
- 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        // const res = await axios.get(
-        //   "https://admin-delta-rosy.vercel.app/api/people",
-        //   {
-        //     headers: {
-        //       Authorization: `Bearer ${token}`,
-        //     },
-        //     withCredentials: true,
-        //   }
-        // );
-        // setUsers(res.data?.data);
-        
-        setUsers([
-        {
-          id: "1",
-          name: "John Doe",
-          email: "john@example.com",
-          createdAt: "2024-12-01",
-          invoice: "kjsndubvjancjsancue",
-        },
-        {
-          id: "2",
-          name: "Jane Smith",
-          email: "jane@example.com",
-          createdAt: "2024-11-15",
-          invoice: "kdjbiudbvjdfvn",
-        },
-        {
-          id: "3",
-          name: "Arjun Mehta",
-          email: "arjun@example.com",
-          createdAt: "2025-01-10",
-          invoice: "kjdsffvjdsnfvjnj",
-        },
-      ]);
-      } catch (err) {
-        console.error("Failed to fetch users:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchUsers();
-  }, [token]);
+useEffect(() => {
+  const fetchInvoices = async () => {
+    try {
+      const response = await axios.get(
+        "https://invoice-chi-five.vercel.app/api/v1/invoice/allinv",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("Fetched Invoices:", response.data?.invoices || []);
+
+      // Set state with invoices array
+      setInvoices(response.data?.invoices || []);
+    } catch (err) {
+      console.error("Failed to fetch invoices:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (token) {
+    fetchInvoices();
+  }
+}, [token]);
+
 
   const deleteUser = async (userId: string) => {
     const toastId = toast.loading("Deleting user...");
@@ -129,11 +113,11 @@ const Invoices = () => {
     }
   };
 
-  const filteredUsers = users?.filter((user) => {
+  const filteredInvoices = invoices?.filter((invoice) => {
     const term = searchTerm.toLowerCase();
     return (
-      user?.name?.toLowerCase().includes(term) ||
-      user?.email?.toLowerCase().includes(term)
+      invoice?.name?.toLowerCase().includes(term) ||
+      invoice?.email?.toLowerCase().includes(term)
     );
   });
 
@@ -207,64 +191,64 @@ const Invoices = () => {
                   </div>
                 </td>
               </tr>
-            ) : filteredUsers?.length > 0 ? (
-              filteredUsers?.map((user, idx) => (
+            ) : filteredInvoices?.length > 0 ? (
+              filteredInvoices?.map((invoice, idx) => (
                 <tr
-                  key={user.id || idx}
+                  key={invoice.id || idx}
                   className="hover:bg-gray-50 even:bg-white relative"
                 >
                   <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
                     {idx + 1}
                   </td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-800 border-b border-gray-200">
-                    {user?.name}
+                    {invoice?.name}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
-                    {user?.email}
+                    {invoice?.email}
                   </td>
                  
                   <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
-                    {user?.createdAt || "-"}
+                    {invoice?.createdAt || "-"}
                   </td>
                    <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200 hover:underline">
                     <a
                       href={
-                        user?.invoice?.startsWith("http")
-                          ? user.invoice
-                          : `https://${user?.invoice}`
+                        invoice?.invoice?.startsWith("http")
+                          ? invoice.invoice
+                          : `https://${invoice?.invoice}`
                       }
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {user?.invoice}
+                      {invoice?.invoice}
                     </a>
                   </td>
                   <td className="relative px-4 py-3 text-sm border-b border-gray-200">
                     <div
                       ref={(el) => {
-                        if (el && user?.id) {
-                          dropdownRefs.current.set(user?.id, el);
+                        if (el && invoice?.id) {
+                          dropdownRefs.current.set(invoice?.id, el);
                         }
                       }}
                       className="relative inline-block text-left"
                     >
                       <button
-                        onClick={() => toggleDropdown(user?.id)}
+                        onClick={() => toggleDropdown(invoice?.id)}
                         className="flex items-center p-1 rounded hover:bg-gray-200 transition cursor-pointer"
                         aria-label="Open actions menu"
                       >
                         <FiMoreVertical size={20} />
                       </button>
 
-                      {dropdownOpen === user?.id && (
+                      {dropdownOpen === invoice?.id && (
                         <div className="absolute right-6 bottom-0 mb-2 w-40 rounded-md bg-white shadow-lg border border-gray-200 z-50 animate-fadeUp">
                           <ul>
                             <li>
                               <button
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                                 onClick={() => {
-                                  setSelectedUserId(user?.id);
-                                  fetchUserById(user?.id);
+                                  setSelectedUserId(invoice?.id);
+                                  fetchUserById(invoice?.id);
                                   setIsModalOpen(true);
                                   setDropdownOpen(null);
                                 }}
@@ -277,10 +261,10 @@ const Invoices = () => {
                                 className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
                                 onClick={() => {
                                   const confirmDelete = confirm(
-                                    `Are you sure you want to delete ${user.name}?`
+                                    `Are you sure you want to delete ${invoice.name}?`
                                   );
                                   if (confirmDelete) {
-                                    deleteUser(user?.id || "");
+                                    deleteUser(invoice?.id || "");
                                   }
                                 }}
                               >

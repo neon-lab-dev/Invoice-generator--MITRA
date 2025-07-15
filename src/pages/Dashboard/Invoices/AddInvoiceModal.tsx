@@ -3,7 +3,9 @@ import { FiX } from "react-icons/fi";
 import TextInput from "../../../components/Reusable/TextInput/TextInput";
 import { toast } from "sonner";
 import SelectInput from "../../../components/Reusable/SelectInput/SelectInput";
-import {generateInvoicePDF} from "../../../utils/InvoiceFormat";
+import { generateInvoicePDF } from "../../../utils/InvoiceFormat";
+import axios from "axios";
+import { useState } from "react";
 
 interface Installment {
   installmentTitle?: string;
@@ -69,81 +71,82 @@ const INVOICE_TYPES = ["Project", "Course"];
 
 const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
   const {
-  register,
-  handleSubmit,
-  control,
-  reset,
-  formState: { errors },
-} = useForm<InvoiceFormData>({
-  defaultValues: {
-    invoiceType: "Project",
-    invoiceDate: "2025-07-08",
-    dueDate: "2025-07-15",
-    terms: "Net 15",
-    notes: "This is a test invoice for preview purposes.",
-    placeOfSupply: "Maharashtra",
-    billTo: {
-      name: "John Doe",
-      address: "123, Baker Street",
-      city: "Mumbai",
-      state: "Maharashtra",
-      pinCode: "400001",
-      country: "India",
-      gstin: "27ABCDE1234F1Z5",
-    },
-    shipTo: {
-      name: "Jane Smith",
-      address: "456, Market Street",
-      city: "Pune",
-      state: "Maharashtra",
-      pinCode: "411001",
-      country: "India",
-      gstin: "27ABCDE5678G1Z9",
-    },
-    paymentTerms: {
-      totalAmount: 5000,
-      installments: [
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<InvoiceFormData>({
+    defaultValues: {
+      invoiceType: "Project",
+      invoiceDate: "2025-07-08",
+      dueDate: "2025-07-15",
+      terms: "Net 15",
+      notes: "This is a test invoice for preview purposes.",
+      placeOfSupply: "Maharashtra",
+      billTo: {
+        name: "John Doe",
+        address: "123, Baker Street",
+        city: "Mumbai",
+        state: "Maharashtra",
+        pinCode: "400001",
+        country: "India",
+        gstin: "27ABCDE1234F1Z5",
+      },
+      shipTo: {
+        name: "Jane Smith",
+        address: "456, Market Street",
+        city: "Pune",
+        state: "Maharashtra",
+        pinCode: "411001",
+        country: "India",
+        gstin: "27ABCDE5678G1Z9",
+      },
+      paymentTerms: {
+        totalAmount: 5000,
+        installments: [
+          {
+            installmentTitle: "Advance",
+            installmentAmount: 2500,
+            details: "Paid before starting project",
+          },
+          {
+            installmentTitle: "Final Payment",
+            installmentAmount: 2500,
+            details:
+              "Due on project completion Due on project completionDue on project completionDue on project completionDue on project completion",
+          },
+        ],
+      },
+      items: [
         {
-          installmentTitle: "Advance",
-          installmentAmount: 2500,
-          details: "Paid before starting project",
+          description: "Website Development",
+          hsnCode: "998313",
+          quantity: 1,
+          rate: 4000,
+          amount: 4000,
+          percentage: 18,
+          igstAmount: 720,
         },
         {
-          installmentTitle: "Final Payment",
-          installmentAmount: 2500,
-          details: "Due on project completion Due on project completionDue on project completionDue on project completionDue on project completion",
+          description: "Domain & Hosting",
+          hsnCode: "998314",
+          quantity: 1,
+          rate: 1000,
+          amount: 1000,
+          percentage: 18,
+          igstAmount: 180,
         },
       ],
+      subTotal: 5000,
+      igstAmount: 900,
+      amountWithheld: 0,
+      totalAmount: 5900,
+      dueAmount: 2500,
     },
-    items: [
-      {
-        description: "Website Development",
-        hsnCode: "998313",
-        quantity: 1,
-        rate: 4000,
-        amount: 4000,
-        percentage: 18,
-        igstAmount: 720,
-      },
-      {
-        description: "Domain & Hosting",
-        hsnCode: "998314",
-        quantity: 1,
-        rate: 1000,
-        amount: 1000,
-        percentage: 18,
-        igstAmount: 180,
-      },
-    ],
-    subTotal: 5000,
-    igstAmount: 900,
-    amountWithheld: 0,
-    totalAmount: 5900,
-    dueAmount: 2500,
-  },
-});
+  });
 
-
+  const [invoice,setInvoice ]=useState({})
   const { fields: itemFields, append: appendItem } = useFieldArray({
     control,
     name: "items",
@@ -155,30 +158,84 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
       name: "paymentTerms.installments",
     });
 
- const onSubmit = async (data: InvoiceFormData) => {
-  const toastId = toast.loading("Generating Invoice PDF...");
+  const onSubmit = async (data: InvoiceFormData) => {
+    const toastId = toast.loading("Submitting invoice...");
 
-  try {
-    generateInvoicePDF(data);
+    try {
+      const payload = {
+        invoiceDate: data.invoiceDate,
+        dueDate: data.dueDate,
+        terms: data.terms,
+        notes: data.notes,
+        placeOfSupply: data.placeOfSupply,
+        billTo: [
+          {
+            name: data.billTo?.name,
+            address: data.billTo?.address,
+            city: data.billTo?.city,
+            state: data.billTo?.state,
+            pinCode: data.billTo?.pinCode,
+            country: data.billTo?.country,
+            gst: data.billTo?.gstin,
+          },
+        ],
+        shipTo: [
+          {
+            name: data.shipTo?.name,
+            address: data.shipTo?.address,
+            city: data.shipTo?.city,
+            state: data.shipTo?.state,
+            pinCode: data.shipTo?.pinCode,
+            country: data.shipTo?.country,
+            gst: data.shipTo?.gstin,
+          },
+        ],
+        GSTIN: data.billTo?.gstin,
+        totalAmount: data.totalAmount,
+        installments: data.paymentTerms?.installments.map((i) => ({
+          name: i.installmentTitle,
+          amount: i.installmentAmount,
+          description: i.details,
+        })),
+        invoiceItems: data.items.map((item) => ({
+          item: item.description,
+          hsn: item.hsnCode,
+          qty: item.quantity,
+          rate: item.rate,
+          amount: item.amount,
+        })),
+        subTotal: data.subTotal,
+        igst: data.igstAmount,
+        amountWitheld: data.amountWithheld,
+        dueAmount: data.dueAmount,
+      };
 
-    // // Create a temporary download link
-    // const url = URL.createObjectURL(blob);
-    // const a = document.createElement('a');
-    // a.href = url;
-    // a.download = `Invoice-${data.invoiceDate || 'generated'}.pdf`;
-    // document.body.appendChild(a);
-    // a.click();
-    // document.body.removeChild(a);
-    // URL.revokeObjectURL(url);
+      const res = await axios.post(
+        "https://invoice-chi-five.vercel.app/api/v1/invoice/create",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // If needed for auth/session
+        }
+      );
+      // setInvoice(res.data?.data)
+      generateInvoicePDF(res.data?.data);
+      // generateInvoicePDF(data)
+      console.log(res.data?.data);
+      toast.success("Invoice created successfully!", { id: toastId });
 
-    toast.success("Invoice PDF generated", { id: toastId });
-    // reset();
-    // onClose();
-  } catch (error) {
-    console.error(error);
-    toast.error("Failed to generate PDF", { id: toastId });
-  }
-};
+      // Optional: Reset or close modal
+      reset();
+      onClose();
+    } catch (err: any) {
+      console.error("Error creating invoice", err);
+      toast.error(err?.response?.data?.message || "Failed to create invoice", {
+        id: toastId,
+      });
+    }
+  };
 
   return (
     <div

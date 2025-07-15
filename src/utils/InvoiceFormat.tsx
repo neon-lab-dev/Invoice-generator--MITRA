@@ -42,10 +42,14 @@ export const generateInvoicePDF = (invoiceData: any) => {
   y += 8; // Move down after header
   doc.setFontSize(10);
   const metaLeftY = y;
-  doc.text(`# : ${invoiceData.invoiceNumber || "INV-XXX"}`, marginX, y);
-  doc.text(`Date : ${invoiceData.invoiceDate}`, marginX, (y += lineSpacing));
-  doc.text(`Terms : ${invoiceData.terms}`, marginX, (y += lineSpacing));
-  doc.text(`Due Date : ${invoiceData.dueDate}`, marginX, (y += lineSpacing));
+  doc.text(`# : ${invoiceData.customInvoiceId
+|| "INV-XXX"}`, marginX, y);
+  doc.text(`Date : ${invoiceData.createdAt
+}`, marginX, (y += lineSpacing));
+  doc.text(`Terms : ${invoiceData.terms
+}`, marginX, (y += lineSpacing));
+  doc.text(`Due Date : ${invoiceData.dueDate
+}`, marginX, (y += lineSpacing));
 
   // Draw vertical line between left and right blocks
   const verticalLineX = pageWidth / 2;
@@ -78,20 +82,21 @@ export const generateInvoicePDF = (invoiceData: any) => {
   doc.text("Ship To", pageWidth / 2 + 2, y);
   doc.setFont("helvetica", "normal");
 
-  const billTo = invoiceData.billTo || {};
-  const shipTo = invoiceData.shipTo || {};
+  const billTo = invoiceData.billTo?.[0] || {};
+  const shipTo = invoiceData.shipTo?.[0] || {};
+  
   const addressSpacing = lineSpacing;
 
   const formatAddress = (data: any) => [
     data.name || "",
     data.address || "",
     `${data.city || ""}, ${data.state || ""}, ${data.pinCode || ""}`,
-    `GSTIN: ${data.gstin || ""}`,
+    `GSTIN: ${data.gst || ""}`,
   ];
 
   const billLines = formatAddress(billTo);
   const shipLines = formatAddress(shipTo);
-
+console.log(billTo.name)
   // Calculate address block height
   const addressBlockHeight = billLines.length * addressSpacing;
 
@@ -143,16 +148,17 @@ export const generateInvoicePDF = (invoiceData: any) => {
         "Amount",
       ],
     ],
-    body: invoiceData.items.map((item: any, index: number) => [
-      index + 1,
-      item.description,
-      item.hsnCode,
-      item.quantity,
-      Number(item.rate).toFixed(2),
-      item.percentage,
-      Number(item.igstAmount).toFixed(2),
-      Number(item.amount).toFixed(2),
-    ]),
+   body: (invoiceData.invoiceItems || []).map((item: any, index: number) => [
+  index + 1,
+  item.item || "", // item & description
+  item.hsn || "",  // HSN/SAC
+  item.qty || 0,   // Qty
+  Number(item.rate || 0).toFixed(2), // Rate
+  ((invoiceData.igst / invoiceData.subTotal) * 100).toFixed(2), // IGST %
+  ((item.amount * invoiceData.igst) / invoiceData.subTotal).toFixed(2), // IGST Amt
+  Number(item.amount || 0).toFixed(2), // Total
+]),
+
     margin: { left: marginX - 3, right: marginX - 3 },
     styles: {
       fontSize: 9,
@@ -276,19 +282,18 @@ doc.setCharSpace(0);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
 
-  const installments = invoiceData.paymentTerms?.installments || [];
+  const installments = invoiceData.installments || [];
 
-  const terms = [
-    `Total amount: ₹ ${String(
-      invoiceData.paymentTerms?.totalAmount ?? "0.00"
-    )} + GST`,
-    ...installments.map((inst: any) => {
-      const title = inst.installmentTitle?.trim() || "Installment";
-      const amount = String(inst.installmentAmount ?? "0.00");
-      const details = inst.details?.trim() || "";
-      return `${title}: ₹ ${amount}${details ? " - " + details : ""}`;
-    }),
-  ];
+const terms = [
+  `Total amount: ₹ ${String(invoiceData.totalAmount ?? "0.00")} + GST`,
+  ...installments.map((inst: any) => {
+    const title = inst.name?.trim() || "Installment";
+    const amount = String(inst.amount ?? "0.00");
+    const details = inst.description?.trim() || "";
+    return `${title}: ₹ ${amount}${details ? " - " + details : ""}`;
+  }),
+];
+
 
   let currentY = leftY;
 
