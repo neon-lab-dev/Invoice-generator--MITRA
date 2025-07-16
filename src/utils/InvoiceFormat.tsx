@@ -334,7 +334,7 @@ alignRightSection("Balance Due", invoiceData.dueAmount || 0, true); // with icon
 
   terms.forEach((term) => {
     const wrappedLines = wrapText(term, maxWidth, doc);
-    wrappedLines.forEach((line, index) => {
+    wrappedLines.forEach((line) => {
       // doc.setCharSpace(index === 0 ? -0.5 : 0); // Only apply -0.5 for first line
       doc.text(line, marginX, (currentY += lineSpacing));
     });
