@@ -4,7 +4,7 @@ import { FiMoreVertical, FiTrash2, FiEdit2 } from "react-icons/fi";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 import Loader from "../../../components/Reusable/Loader/Loader";
-import UpdateInvoiceModal from "./UpdateInvoiceModal";
+import UpdateInvoiceModal, { formatDate } from "./UpdateInvoiceModal";
 import AddInvoiceModal from "./AddInvoiceModal";
 import axios from "axios";
 import type { TInvoice } from "../../../types/invoicedata.types";
@@ -20,7 +20,7 @@ const Invoices = () => {
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddPeopleModalOpen, setIsAddPeopleModalOpen] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<TInvoice | null>(null);
+  // const [selectedInvoice, setSelectedInvoice] = useState<TInvoice | null>(null);
   const token = Cookies.get("accessToken");
 
   // Fetch user by ID
@@ -28,16 +28,17 @@ const Invoices = () => {
     setIsFetchingUserById(true);
 
     try {
-      const res = await axios.get(
-        `https://invoice-chi-five.vercel.app/api/v1/invoice/${invoiceId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      );
-      setSelectedInvoice(res.data?.data);
+      // const res = await axios.get(
+      //   `https://invoice-chi-five.vercel.app/api/v1/invoice/${invoiceId}`,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${token}`,
+      //     },
+      //     withCredentials: true,
+      //   }
+      // );
+      // setSelectedInvoice(res.data?.data);
+      console.log(invoiceId)
 
       setIsModalOpen(true);
     } catch (err) {
@@ -206,7 +207,7 @@ useEffect(() => {
                   </td> */}
                  
                   <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
-                    {invoice?.createdAt || "-"}
+                    {formatDate(invoice?.createdAt) || "-"}
                   </td>
                    {/* <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200 hover:underline">
                     <a

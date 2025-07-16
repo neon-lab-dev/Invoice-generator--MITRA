@@ -1,10 +1,11 @@
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { FiX } from "react-icons/fi";
 import TextInput from "../../../components/Reusable/TextInput/TextInput";
 import { toast } from "sonner";
 import SelectInput from "../../../components/Reusable/SelectInput/SelectInput";
 import { generateInvoicePDF } from "../../../utils/InvoiceFormat";
 import axios from "axios";
+import { useEffect } from "react";
 
 export interface Installment {
   installmentTitle?: string;
@@ -74,6 +75,8 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
     handleSubmit,
     control,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<InvoiceFormData>({
     defaultValues: {
@@ -150,6 +153,56 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
     control,
     name: "items",
   });
+  const items = useWatch({ control, name: "items" });
+  const installments = useWatch({ control, name: "paymentTerms.installments" });
+  const amountWithheld = watch("amountWithheld") || 0;
+
+  useEffect(() => {
+    if (!items) return;
+
+    let subTotal = 0;
+    let totalIgst = 0;
+
+    items.map((item, index) => {
+      const quantity = Number(item.quantity || 0);
+      const rate = Number(item.rate || 0);
+      const amount = quantity * rate;
+      const gstPercent = Number(item.percentage || 0);
+      const igstAmount = (amount * gstPercent) / 100;
+
+      subTotal += amount;
+      totalIgst += igstAmount;
+
+      // Update amount and igstAmount in form
+      setValue(`items.${index}.amount`, amount);
+      setValue(`items.${index}.igstAmount`, igstAmount);
+
+      return { amount, igstAmount };
+    });
+
+  
+    setValue("subTotal", subTotal);
+    setValue("igstAmount", totalIgst);
+  }, [items, setValue]);
+
+  useEffect(() => {
+    const subTotal = watch("subTotal") || 0;
+    // const igstAmount = watch("igstAmount") || 0;
+    const firstInstallment = watch("paymentTerms.totalAmount") || 0;
+
+    const totalAmount = subTotal ;
+    const dueAmount = firstInstallment-totalAmount  ;
+
+    setValue("totalAmount", totalAmount);
+    setValue("dueAmount", (dueAmount));
+  }, [
+    watch("subTotal"),
+    watch("igstAmount"),
+    watch("paymentTerms.totalAmount") ,
+    amountWithheld,
+    installments,
+    setValue,
+  ]);
 
   const { fields: installmentFields, append: appendInstallment } =
     useFieldArray({
@@ -352,6 +405,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
             <div key={field.id} className="grid grid-cols-3 gap-4">
               <TextInput
                 placeholder="Title"
+                isRequired={false}
                 {...register(
                   `paymentTerms.installments.${index}.installmentTitle`
                 )}
@@ -359,12 +413,14 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
               <TextInput
                 placeholder="Amount"
                 type="number"
+                isRequired={false}
                 {...register(
                   `paymentTerms.installments.${index}.installmentAmount`
                 )}
               />
               <TextInput
                 placeholder="Details"
+                isRequired={false}
                 {...register(`paymentTerms.installments.${index}.details`)}
               />
             </div>

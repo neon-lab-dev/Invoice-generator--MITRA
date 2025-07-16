@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray,useWatch } from "react-hook-form";
 import { FiX } from "react-icons/fi";
 import TextInput from "../../../components/Reusable/TextInput/TextInput";
 import { toast } from "sonner";
@@ -16,7 +16,7 @@ interface UpdateInvoiceModalProps {
   isFetchingUserById: boolean;
 }
 
-const formatDate = (input: any) => {
+export const formatDate = (input: any) => {
   if (!input) return "";
   const date = new Date(input);
   return date.toISOString().split("T")[0];
@@ -43,7 +43,8 @@ const UpdateInvoiceModal: React.FC<UpdateInvoiceModalProps> = ({
   const {
     register,
     handleSubmit,
-    // setValue,
+    setValue,
+    watch,
     reset,
     control,
     formState: { errors },
@@ -53,7 +54,9 @@ const UpdateInvoiceModal: React.FC<UpdateInvoiceModalProps> = ({
     control,
     name: "items",
   });
-
+  const items = useWatch({ control, name: "items" });
+const installments = useWatch({ control, name: "paymentTerms.installments" });
+const amountWithheld = watch("amountWithheld") || 0;
   const { fields: installmentFields, append: appendInstallment } =
     useFieldArray({
       control,
@@ -130,6 +133,54 @@ const UpdateInvoiceModal: React.FC<UpdateInvoiceModalProps> = ({
 
     fetchInvoiceById();
   }, [invoiceId, reset]);
+
+  useEffect(() => {
+    if (!items) return;
+
+    let subTotal = 0;
+    let totalIgst = 0;
+
+    items.map((item, index) => {
+      const quantity = Number(item.quantity || 0);
+      const rate = Number(item.rate || 0);
+      const amount = quantity * rate;
+      const gstPercent = Number(item.percentage || 0);
+      const igstAmount = (amount * gstPercent) / 100;
+
+      subTotal += amount;
+      totalIgst += igstAmount;
+
+      // Update amount and igstAmount in form
+      setValue(`items.${index}.amount`, amount);
+      setValue(`items.${index}.igstAmount`, igstAmount);
+
+      return { amount, igstAmount };
+    });
+    // console.log(updatedItems)
+
+    setValue("subTotal", subTotal);
+    setValue("igstAmount", totalIgst);
+  }, [items, setValue]);
+
+  useEffect(() => {
+  const subTotal = watch("subTotal") || 0;
+  // const igstAmount = watch("igstAmount") || 0;
+  const totalInstallmentsAmount = watch("paymentTerms.totalAmount") || 0;
+   
+
+  const totalAmount = subTotal ;
+  const dueAmount = totalInstallmentsAmount-totalAmount ;
+
+  setValue("totalAmount", totalAmount);
+  setValue("dueAmount", dueAmount);
+}, [
+  watch("subTotal"),
+  watch("igstAmount"),
+  watch("paymentTerms.totalAmount"),
+  amountWithheld,
+  installments,
+  setValue,
+]);
 
   const onSubmit = async (data: InvoiceFormData) => {
     const toastId = toast.loading("Updating invoice...");
