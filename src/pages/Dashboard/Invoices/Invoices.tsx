@@ -14,24 +14,24 @@ const Invoices = () => {
   const { register, watch } = useForm({ defaultValues: { search: "" } });
   const searchTerm = watch("search");
   const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const [invoices, setInvoices] = useState<TInvoice[]>([]);
+  const [invoices, setInvoices] = useState<TInvoice[]> ([]);
   const [loading, setLoading] = useState(false);
   const [isFetchingUserById, setIsFetchingUserById] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddPeopleModalOpen, setIsAddPeopleModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<TUser | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<TInvoice | null>(null);
   const token = Cookies.get("accessToken");
 
   // Fetch user by ID
-  const fetchUserById = async (userId: string) => {
+  const fetchUserById = async (invoiceId: string) => {
     setIsFetchingUserById(true);
-    console.log(userId)
+    console.log(invoiceId)
 
     try {
       const res = await axios.get(
-        `https://admin-delta-rosy.vercel.app/api/people/${userId}`,
+        `https://invoice-chi-five.vercel.app/api/v1/invoice/${invoiceId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -39,11 +39,7 @@ const Invoices = () => {
           withCredentials: true,
         }
       );
-
-      setSelectedUser(res.data?.data);
-      
-      
-   
+      setSelectedInvoice(res.data?.data);
       setIsModalOpen(true);
     } catch (err) {
       console.error("Failed to fetch user by ID:", err);
@@ -72,6 +68,7 @@ useEffect(() => {
 
       // Set state with invoices array
       setInvoices(response.data?.invoices || []);
+      console.log(invoices)
     } catch (err) {
       console.error("Failed to fetch invoices:", err);
     } finally {
@@ -82,15 +79,19 @@ useEffect(() => {
   if (token) {
     fetchInvoices();
   }
-}, [token]);
+}, [token , invoices]);
+
+useEffect(() => {
+  console.log("Invoices state updated:", invoices);
+}, [invoices]);
 
 
-  const deleteUser = async (userId: string) => {
-    const toastId = toast.loading("Deleting user...");
+  const deleteUser = async (invoiceId: string) => {
+    const toastId = toast.loading("Deleting invoice...");
 
     try {
       const res = await fetch(
-        `https://admin-delta-rosy.vercel.app/api/people/${userId}`,
+        `https://invoice-chi-five.vercel.app/api/v1/invoice/${invoiceId}`,
         {
           method: "DELETE",
           headers: {
@@ -106,7 +107,7 @@ useEffect(() => {
       }
 
       toast.success("User deleted successfully", { id: toastId });
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       toast.error("Something went wrong", { id: toastId });
       console.error(error);
@@ -116,8 +117,9 @@ useEffect(() => {
   const filteredInvoices = invoices?.filter((invoice) => {
     const term = searchTerm.toLowerCase();
     return (
-      invoice?.name?.toLowerCase().includes(term) ||
-      invoice?.email?.toLowerCase().includes(term)
+      invoice?.billTo[0]?.name?.toLowerCase().includes(term) 
+      // ||
+      // invoice?.email?.toLowerCase().includes(term)
     );
   });
 
@@ -167,9 +169,9 @@ useEffect(() => {
               {[
                 "Sl",
                 "Name",
-                "Email",
+                // "Email",
                 "Invoice Issue Date",
-                "Invoice",
+                // "Invoice",
                 "Action",
               ].map((h) => (
                 <th
@@ -194,23 +196,23 @@ useEffect(() => {
             ) : filteredInvoices?.length > 0 ? (
               filteredInvoices?.map((invoice, idx) => (
                 <tr
-                  key={invoice.id || idx}
+                  key={invoice?.customInvoiceId || idx}
                   className="hover:bg-gray-50 even:bg-white relative"
                 >
                   <td className="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
                     {idx + 1}
                   </td>
                   <td className="px-4 py-3 text-sm font-medium text-gray-800 border-b border-gray-200">
-                    {invoice?.name}
+                    {invoice?.billTo[0]?.name || "-"}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
+                  {/* <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
                     {invoice?.email}
-                  </td>
+                  </td> */}
                  
                   <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
                     {invoice?.createdAt || "-"}
                   </td>
-                   <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200 hover:underline">
+                   {/* <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200 hover:underline">
                     <a
                       href={
                         invoice?.invoice?.startsWith("http")
@@ -222,33 +224,33 @@ useEffect(() => {
                     >
                       {invoice?.invoice}
                     </a>
-                  </td>
+                  </td> */}
                   <td className="relative px-4 py-3 text-sm border-b border-gray-200">
                     <div
                       ref={(el) => {
-                        if (el && invoice?.id) {
-                          dropdownRefs.current.set(invoice?.id, el);
+                        if (el && invoice?._id) {
+                          dropdownRefs.current.set(invoice?._id, el);
                         }
                       }}
                       className="relative inline-block text-left"
                     >
                       <button
-                        onClick={() => toggleDropdown(invoice?.id)}
+                        onClick={() => toggleDropdown(invoice?._id)}
                         className="flex items-center p-1 rounded hover:bg-gray-200 transition cursor-pointer"
                         aria-label="Open actions menu"
                       >
                         <FiMoreVertical size={20} />
                       </button>
 
-                      {dropdownOpen === invoice?.id && (
+                      {dropdownOpen === invoice?._id && (
                         <div className="absolute right-6 bottom-0 mb-2 w-40 rounded-md bg-white shadow-lg border border-gray-200 z-50 animate-fadeUp">
                           <ul>
                             <li>
                               <button
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                                 onClick={() => {
-                                  setSelectedUserId(invoice?.id);
-                                  fetchUserById(invoice?.id);
+                                  setSelectedInvoiceId(invoice?._id);
+                                  fetchUserById(invoice?._id);
                                   setIsModalOpen(true);
                                   setDropdownOpen(null);
                                 }}
@@ -261,10 +263,10 @@ useEffect(() => {
                                 className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
                                 onClick={() => {
                                   const confirmDelete = confirm(
-                                    `Are you sure you want to delete ${invoice.name}?`
+                                    `Are you sure you want to delete ${invoice.customInvoiceId}?`
                                   );
                                   if (confirmDelete) {
-                                    deleteUser(invoice?.id || "");
+                                    deleteUser(invoice?._id || "");
                                   }
                                 }}
                               >
@@ -307,11 +309,11 @@ useEffect(() => {
       `}
       </style>
 
-      {isModalOpen && selectedUserId && (
+      {isModalOpen && selectedInvoiceId && (
         <UpdateInvoiceModal
-          userId={selectedUserId}
+          invoiceId={selectedInvoiceId}
           onClose={() => setIsModalOpen(false)}
-          user={selectedUser}
+          user={selectedInvoice}
           isFetchingUserById={isFetchingUserById}
           
           
