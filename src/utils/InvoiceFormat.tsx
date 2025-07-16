@@ -232,17 +232,17 @@ export const generateInvoicePDF = (invoiceData: any) => {
   const totalsStartY = rightY;
 
   // 2. Totals rendering
-  alignRightSection("Sub Total", invoiceData.subTotal || 0);
+  alignRightSection("Sub Total:", invoiceData.subTotal || 0);
 alignRightSection(
-  `IGST (${invoiceData.items?.[0]?.percentage || 0}%)`,
+  `IGST (${invoiceData.items?.[0]?.percentage || 0}%:)`,
   invoiceData.igstAmount || 0
 );
 alignRightSection(
-  "Amount Withheld (Section 194J)",
+  "Amount Withheld (Section 194J):",
   invoiceData.amountWithheld || 0
 );
-alignRightSection("Total", invoiceData.totalAmount || 0, true); // with icon
-alignRightSection("Balance Due", invoiceData.dueAmount || 0, true); // with icon
+alignRightSection("Total:", invoiceData.totalAmount || 0, true); // with icon
+alignRightSection("Balance Due:", invoiceData.dueAmount || 0, true); // with icon
 
 
   // 3. End Y after rendering totals
