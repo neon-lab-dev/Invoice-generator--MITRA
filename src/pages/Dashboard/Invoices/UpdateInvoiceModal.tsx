@@ -9,6 +9,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import type { InvoiceFormData } from "./AddInvoiceModal";
 import SelectInput from "../../../components/Reusable/SelectInput/SelectInput";
+import { generateInvoicePDF } from "../../../utils/InvoiceFormat";
 
 interface UpdateInvoiceModalProps {
   invoiceId: string;
@@ -215,7 +216,6 @@ const amountWithheld = watch("amountWithheld") || 0;
         dueAmount: data.dueAmount,
       };
       const token = Cookies.get("token");
-      console.log("paylod", payload);
       const res = await axios.put(
         `https://invoice-chi-five.vercel.app/api/v1/invoice/${invoiceId}`,
         payload,
@@ -227,10 +227,11 @@ const amountWithheld = watch("amountWithheld") || 0;
           withCredentials: true,
         }
       );
-      console.log(res);
-
+      if(res.status === 200)  generateInvoicePDF(res.data?.updatedInvoice);
+      
       toast.success("Invoice updated successfully!", { id: toastId });
       onClose();
+
       // window.location.reload();
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Update failed", {

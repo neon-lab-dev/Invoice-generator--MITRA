@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { FiMoreVertical, FiTrash2, FiEdit2 } from "react-icons/fi";
+import { FiMoreVertical, FiTrash2, FiEdit2, FiDownload } from "react-icons/fi";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
 import Loader from "../../../components/Reusable/Loader/Loader";
@@ -8,19 +8,23 @@ import UpdateInvoiceModal, { formatDate } from "./UpdateInvoiceModal";
 import AddInvoiceModal from "./AddInvoiceModal";
 import axios from "axios";
 import type { TInvoice } from "../../../types/invoicedata.types";
+import { generateInvoicePDF } from "../../../utils/InvoiceFormat";
 
 const Invoices = () => {
   const { register, watch } = useForm({ defaultValues: { search: "" } });
   const searchTerm = watch("search");
   const dropdownRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const [invoices, setInvoices] = useState<TInvoice[]> ([]);
+  const [invoices, setInvoices] = useState<TInvoice[]>([]);
   const [loading, setLoading] = useState(false);
   const [isFetchingUserById, setIsFetchingUserById] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(
+    null
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddPeopleModalOpen, setIsAddPeopleModalOpen] = useState(false);
-  // const [selectedInvoice, setSelectedInvoice] = useState<TInvoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<TInvoice | null>(null);
+  const [isDownload, setIsDownload] = useState(false);
   const token = Cookies.get("accessToken");
 
   // Fetch user by ID
@@ -28,17 +32,18 @@ const Invoices = () => {
     setIsFetchingUserById(true);
 
     try {
-      // const res = await axios.get(
-      //   `https://invoice-chi-five.vercel.app/api/v1/invoice/${invoiceId}`,
-      //   {
-      //     headers: {
-      //       Authorization: `Bearer ${token}`,
-      //     },
-      //     withCredentials: true,
-      //   }
-      // );
-      // setSelectedInvoice(res.data?.data);
-      console.log(invoiceId)
+      const res = await axios.get(
+        `https://invoice-chi-five.vercel.app/api/v1/invoice/${invoiceId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+      setSelectedInvoice(res.data?.invoice);
+      console.log(selectedInvoice);
+      if (isDownload) generateInvoicePDF(res.data?.invoice);
 
       setIsModalOpen(true);
     } catch (err) {
@@ -50,38 +55,36 @@ const Invoices = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        const response = await axios.get(
+          "https://invoice-chi-five.vercel.app/api/v1/invoice/allinv",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            withCredentials: true,
+          }
+        );
 
-useEffect(() => {
-  const fetchInvoices = async () => {
-    try {
-      const response = await axios.get(
-        "https://invoice-chi-five.vercel.app/api/v1/invoice/allinv",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      );
+        // Set state with invoices array
+        setInvoices(response.data?.invoices || []);
+      } catch (err) {
+        console.error("Failed to fetch invoices:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      // Set state with invoices array
-      setInvoices(response.data?.invoices || []);
-    } catch (err) {
-      console.error("Failed to fetch invoices:", err);
-    } finally {
-      setLoading(false);
+    if (token) {
+      fetchInvoices();
     }
-  };
+  }, [token, invoices]);
 
-  if (token) {
-    fetchInvoices();
-  }
-}, [token , invoices]);
-
-useEffect(() => {
-  console.log("");
-}, [invoices]);
-
+  useEffect(() => {
+    console.log("");
+  }, [invoices]);
 
   const deleteUser = async (invoiceId: string) => {
     const toastId = toast.loading("Deleting invoice...");
@@ -113,11 +116,9 @@ useEffect(() => {
 
   const filteredInvoices = invoices?.filter((invoice) => {
     const term = searchTerm.toLowerCase();
-    return (
-      invoice?.billTo[0]?.name?.toLowerCase().includes(term) 
-      // ||
-      // invoice?.email?.toLowerCase().includes(term)
-    );
+    return invoice?.billTo[0]?.name?.toLowerCase().includes(term);
+    // ||
+    // invoice?.email?.toLowerCase().includes(term)
   });
 
   const toggleDropdown = (id: string) =>
@@ -205,11 +206,11 @@ useEffect(() => {
                   {/* <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
                     {invoice?.email}
                   </td> */}
-                 
+
                   <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
                     {formatDate(invoice?.createdAt) || "-"}
                   </td>
-                   {/* <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200 hover:underline">
+                  {/* <td className="px-4 py-3 text-sm text-gray-600 border-b border-gray-200 hover:underline">
                     <a
                       href={
                         invoice?.invoice?.startsWith("http")
@@ -240,8 +241,20 @@ useEffect(() => {
                       </button>
 
                       {dropdownOpen === invoice?._id && (
-                        <div className="absolute right-6 bottom-0 mb-2 w-40 rounded-md bg-white shadow-lg border border-gray-200 z-50 animate-fadeUp">
+                        <div className="absolute right-6 -bottom-24 mb-2 w-40 rounded-md bg-white shadow-lg border border-gray-200 z-50 animate-fadeUp">
                           <ul>
+                            <li>
+                              <button
+                                className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-red-50 cursor-pointer"
+                                onClick={() => {
+                                  setIsDownload(true);
+                                  fetchUserById(invoice?._id || "");
+                                }}
+                              >
+
+                               {isFetchingUserById ? "loading...":<span className="flex items-center"><FiDownload className="mr-2" /> Download</span> }
+                              </button>
+                            </li>
                             <li>
                               <button
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
@@ -311,8 +324,6 @@ useEffect(() => {
           onClose={() => setIsModalOpen(false)}
           invoiceId={selectedInvoiceId}
           isFetchingUserById={isFetchingUserById}
-          
-          
         />
       )}
 
