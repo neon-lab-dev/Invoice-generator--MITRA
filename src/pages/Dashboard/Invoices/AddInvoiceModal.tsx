@@ -5,15 +5,14 @@ import { toast } from "sonner";
 import SelectInput from "../../../components/Reusable/SelectInput/SelectInput";
 import { generateInvoicePDF } from "../../../utils/InvoiceFormat";
 import axios from "axios";
-import { useState } from "react";
 
-interface Installment {
+export interface Installment {
   installmentTitle?: string;
   installmentAmount?: number;
   details?: string;
 }
 
-interface InvoiceItem {
+export interface InvoiceItem {
   description?: string;
   hsnCode?: string;
   quantity?: number;
@@ -23,7 +22,7 @@ interface InvoiceItem {
   igstAmount?: number;
 }
 
-interface Address {
+export interface Address {
   name?: string;
   address?: string;
   city?: string;
@@ -33,7 +32,7 @@ interface Address {
   gstin?: string;
 }
 
-interface InvoiceFormData {
+export interface InvoiceFormData {
   invoiceType?: string;
   invoiceDate?: string;
   dueDate?: string;
@@ -146,7 +145,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
     },
   });
 
-  const [invoice,setInvoice ]=useState({})
+  // const [invoice,setInvoice ]=useState({})
   const { fields: itemFields, append: appendItem } = useFieldArray({
     control,
     name: "items",

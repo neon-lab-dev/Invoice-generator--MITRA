@@ -8,7 +8,6 @@ import UpdateInvoiceModal from "./UpdateInvoiceModal";
 import AddInvoiceModal from "./AddInvoiceModal";
 import axios from "axios";
 import type { TInvoice } from "../../../types/invoicedata.types";
-import type { TUser } from "../../../types/users.types";
 
 const Invoices = () => {
   const { register, watch } = useForm({ defaultValues: { search: "" } });
@@ -27,7 +26,6 @@ const Invoices = () => {
   // Fetch user by ID
   const fetchUserById = async (invoiceId: string) => {
     setIsFetchingUserById(true);
-    console.log(invoiceId)
 
     try {
       const res = await axios.get(
@@ -40,6 +38,7 @@ const Invoices = () => {
         }
       );
       setSelectedInvoice(res.data?.data);
+
       setIsModalOpen(true);
     } catch (err) {
       console.error("Failed to fetch user by ID:", err);
@@ -64,11 +63,8 @@ useEffect(() => {
         }
       );
 
-      console.log("Fetched Invoices:", response.data?.invoices || []);
-
       // Set state with invoices array
       setInvoices(response.data?.invoices || []);
-      console.log(invoices)
     } catch (err) {
       console.error("Failed to fetch invoices:", err);
     } finally {
@@ -82,7 +78,7 @@ useEffect(() => {
 }, [token , invoices]);
 
 useEffect(() => {
-  console.log("Invoices state updated:", invoices);
+  console.log("");
 }, [invoices]);
 
 
@@ -311,9 +307,8 @@ useEffect(() => {
 
       {isModalOpen && selectedInvoiceId && (
         <UpdateInvoiceModal
-          invoiceId={selectedInvoiceId}
           onClose={() => setIsModalOpen(false)}
-          user={selectedInvoice}
+          invoiceId={selectedInvoiceId}
           isFetchingUserById={isFetchingUserById}
           
           
