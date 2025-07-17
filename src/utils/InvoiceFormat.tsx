@@ -41,17 +41,18 @@ export const generateInvoicePDF = (invoiceData: any) => {
   // 1. Header (Company Info + Tax Invoice Label)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.text("MITRA Consultancy Private Limited", marginX, y);
+  doc.text("MITRATECH VENTURES", marginX, y);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text(
-    "No.3 Third Floor, Times Square, 14th Main Rd, 1st Sector,",
-    marginX,
-    (y += lineSpacing)
-  );
-  doc.text("HSR Layout,  Bengaluru 560102", marginX, (y += lineSpacing));
+const address =
+  "Revenue Circle 211, New Holding No. 23A, Old Holding No. 18C/16, Circle Patna City, Ward No. 70, Property No. 1453701, H/O Ajay Kumar Jaiswal, Nandgola, Patna City, Patna – 800008.";
+
+doc.text(address, marginX, (y += lineSpacing), {
+  maxWidth: 120 // adjust based on your page layout
+});
+  doc.text("Nandgola, Patna, Patna, Bihar, 800008", marginX, (y += lineSpacing +9));
   doc.text("India", marginX, (y += lineSpacing));
-  doc.text("GSTIN: 29AAVCA9656J1ZY", marginX, (y += lineSpacing));
+  doc.text("GSTIN: 10AAZPJ4368D1ZN", marginX, (y += lineSpacing));
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
@@ -377,9 +378,9 @@ doc.text(`Total in Words: ${totalInWords} Only`, marginX, leftY);
   doc.text("Bank Account Details:", marginX, bankY);
   doc.setFont("helvetica", "normal");
   doc.text("Bank Name: HDFC BANK Ltd.", marginX, (bankY += lineSpacing));
-  doc.text("Account No: 50200096137259", marginX, (bankY += lineSpacing));
-  doc.text("IFSC Code: HDFC0000193", marginX, (bankY += lineSpacing));
-  doc.text("Account Branch: HSR LAYOUT", marginX, (bankY += lineSpacing));
+  doc.text("Account No: 50200098434861", marginX, (bankY += lineSpacing));
+  doc.text("IFSC Code: HDFC0000332", marginX, (bankY += lineSpacing));
+  doc.text("Account Branch: PATNA - SABZI BAZAR - BIHAR", marginX, (bankY += lineSpacing));
 
   const signatureY = totalsEndY + 10;
 
