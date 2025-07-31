@@ -187,11 +187,12 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
 
   useEffect(() => {
     const subTotal = watch("subTotal") || 0;
+    const subgst=watch("igstAmount")||0;
     // const igstAmount = watch("igstAmount") || 0;
     const firstInstallment = watch("paymentTerms.totalAmount") || 0;
 
-    const totalAmount = subTotal ;
-    const dueAmount = firstInstallment-totalAmount  ;
+    const totalAmount = subTotal +subgst -amountWithheld;
+    const dueAmount = firstInstallment-totalAmount +subgst -amountWithheld;
 
     setValue("totalAmount", totalAmount);
     setValue("dueAmount", (dueAmount));
