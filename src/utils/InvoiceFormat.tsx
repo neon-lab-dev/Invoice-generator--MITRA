@@ -45,7 +45,7 @@ export const generateInvoicePDF = (invoiceData: any) => {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
 const address =
-  "Revenue Circle 211, New Holding No. 23A, Old Holding No. 18C/16, Circle Patna City, Ward No. 70, Property No. 1453701, H/O Ajay Kumar Jaiswal, Nandgola, Patna City, Patna – 800008.";
+  "Revenue Circle 211, New Holding No. 23A, Old Holding No. 18C/16, Circle Patna City, Ward No. 70, Property No. 1453701, H/O Ajay Kumar Jaiswal";
 
 doc.text(address, marginX, (y += lineSpacing), {
   maxWidth: 120 // adjust based on your page layout
@@ -265,10 +265,10 @@ alignRightSection(
 );
 alignRightSection(
   "Amount Withheld (Section 194J):",
-  invoiceData.amountWitheld || 0
+ ` ${invoiceData.amountWitheld || 0} `
 );
 alignRightSection("Total:", invoiceData.totalAmount || 0, true); // with icon
-alignRightSection("Balance Due:", invoiceData.dueAmount
+alignRightSection("Balance Due:", invoiceData.totalAmount
  || 0, true); // with icon
 
 
@@ -333,7 +333,7 @@ doc.text(`Total in Words: ${totalInWords} Only`, marginX, leftY);
   const installments = invoiceData.installments || [];
 
   const terms = [
-    `Total amount:  ${String(invoiceData.totalAmount ?? "0.00")} + GST`,
+    `Total amount:  ${String((invoiceData.subTotal + invoiceData.dueAmount) || "0.00")} + GST`,
     ...installments.map((inst: any) => {
       const title = inst.name?.trim() || "Installment";
       const amount = String(inst.amount ?? "0.00");
@@ -396,8 +396,8 @@ doc.text(`Total in Words: ${totalInWords} Only`, marginX, leftY);
   // Left side: Bold Name
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.text("RISHI", boxX + 4, boxY + 10);
-  doc.text("RAJ", boxX + 4, boxY + 18);
+  doc.text("AJAY KUMAR ", boxX + 4, boxY + 10);
+  doc.text("JAISWAL", boxX + 4, boxY + 18);
 
   // Right side: Digital Signing Info
   doc.setFont("helvetica", "normal");
@@ -407,7 +407,7 @@ doc.text(`Total in Words: ${totalInWords} Only`, marginX, leftY);
 
   const signingText = [
     "Digitally signed by",
-    "RISHI RAJ",
+    "Ajay Kumar Jaiswal",
     `Date: ${currentDateTime.slice(0, 10)}`, // "2025-07-16"
     `${now.toLocaleTimeString("en-IN")} +05'30'`,
   ];
