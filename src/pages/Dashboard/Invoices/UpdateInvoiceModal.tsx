@@ -165,12 +165,13 @@ const amountWithheld = watch("amountWithheld") || 0;
 
   useEffect(() => {
   const subTotal = watch("subTotal") || 0;
+  const subgst=watch("igstAmount")||0;
   // const igstAmount = watch("igstAmount") || 0;
   const totalInstallmentsAmount = watch("paymentTerms.totalAmount") || 0;
    
 
-  const totalAmount = subTotal ;
-  const dueAmount = totalInstallmentsAmount-totalAmount ;
+   const totalAmount = subTotal +subgst -amountWithheld;
+    const dueAmount = totalInstallmentsAmount-totalAmount +subgst -amountWithheld;
 
   setValue("totalAmount", totalAmount);
   setValue("dueAmount", dueAmount);
