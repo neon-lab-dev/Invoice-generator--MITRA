@@ -25,13 +25,14 @@ const Login = () => {
     formState: { errors },
   } = useForm<{ email: string; password: string }>();
 
+  // Login function
   const onSubmit = async (data: { email: string; password: string }) => {
     setIsLoading(true);
     try {
       const response = await axios.post(
         "https://invoice-chi-five.vercel.app/api/v1/login",
         data,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       console.log(response);
       if (response?.data?.success) {
@@ -45,7 +46,8 @@ const Login = () => {
     } catch (error: any) {
       console.error("Login failed", error);
       toast.error(
-        error?.response?.data?.message || "An error occurred. Please try again."
+        error?.response?.data?.message ||
+          "An error occurred. Please try again.",
       );
     } finally {
       setIsLoading(false);
@@ -125,10 +127,11 @@ const Login = () => {
           <button
             type="submit"
             className={`w-full rounded-md px-4 py-2 font-medium text-white cursor-pointer active:scale-95 transition-all duration-300 ease-in-out transform hover:scale-105 
-              ${showPassword
-                ? "bg-primary-10/60 cursor-not-allowed"
-                : "bg-primary-10 hover:bg-primary-10/80 active:scale-95"
-            }
+              ${
+                showPassword
+                  ? "bg-primary-10/60 cursor-not-allowed"
+                  : "bg-primary-10 hover:bg-primary-10/80 active:scale-95"
+              }
             `}
             disabled={isLoading}
           >
