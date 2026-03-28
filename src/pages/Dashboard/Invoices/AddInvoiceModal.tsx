@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { FiX } from "react-icons/fi";
 import TextInput from "../../../components/Reusable/TextInput/TextInput";
@@ -78,75 +79,76 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<InvoiceFormData>({
-    defaultValues: {
-      invoiceType: "Project",
-      invoiceDate: "2025-07-08",
-      dueDate: "2025-07-15",
-      terms: "Net 15",
-      notes: "This is a test invoice for preview purposes.",
-      placeOfSupply: "Maharashtra",
-      billTo: {
-        name: "John Doe",
-        address: "123, Baker Street",
-        city: "Mumbai",
-        state: "Maharashtra",
-        pinCode: "400001",
-        country: "India",
-        gstin: "27ABCDE1234F1Z5",
-      },
-      shipTo: {
-        name: "Jane Smith",
-        address: "456, Market Street",
-        city: "Pune",
-        state: "Maharashtra",
-        pinCode: "411001",
-        country: "India",
-        gstin: "27ABCDE5678G1Z9",
-      },
-      paymentTerms: {
-        totalAmount: 5000,
-        installments: [
-          {
-            installmentTitle: "Advance",
-            installmentAmount: 2500,
-            details: "Paid before starting project",
-          },
-          {
-            installmentTitle: "Final Payment",
-            installmentAmount: 2500,
-            details:
-              "Due on project completion Due on project completionDue on project completionDue on project completionDue on project completion",
-          },
-        ],
-      },
-      items: [
-        {
-          description: "Website Development",
-          hsnCode: "998313",
-          quantity: 1,
-          rate: 4000,
-          amount: 4000,
-          percentage: 18,
-          igstAmount: 720,
-        },
-        {
-          description: "Domain & Hosting",
-          hsnCode: "998314",
-          quantity: 1,
-          rate: 1000,
-          amount: 1000,
-          percentage: 18,
-          igstAmount: 180,
-        },
-      ],
-      subTotal: 5000,
-      igstAmount: 900,
-      amountWithheld: 0,
-      totalAmount: 5900,
-      dueAmount: 2500,
-    },
-  });
+  } = useForm<InvoiceFormData>();
+  //   {
+  //   defaultValues: {
+  //     invoiceType: "Project",
+  //     invoiceDate: "2025-07-08",
+  //     dueDate: "2025-07-15",
+  //     terms: "Net 15",
+  //     notes: "This is a test invoice for preview purposes.",
+  //     placeOfSupply: "Maharashtra",
+  //     billTo: {
+  //       name: "John Doe",
+  //       address: "123, Baker Street",
+  //       city: "Mumbai",
+  //       state: "Maharashtra",
+  //       pinCode: "400001",
+  //       country: "India",
+  //       gstin: "27ABCDE1234F1Z5",
+  //     },
+  //     shipTo: {
+  //       name: "Jane Smith",
+  //       address: "456, Market Street",
+  //       city: "Pune",
+  //       state: "Maharashtra",
+  //       pinCode: "411001",
+  //       country: "India",
+  //       gstin: "27ABCDE5678G1Z9",
+  //     },
+  //     paymentTerms: {
+  //       totalAmount: 5000,
+  //       installments: [
+  //         {
+  //           installmentTitle: "Advance",
+  //           installmentAmount: 2500,
+  //           details: "Paid before starting project",
+  //         },
+  //         {
+  //           installmentTitle: "Final Payment",
+  //           installmentAmount: 2500,
+  //           details:
+  //             "Due on project completion Due on project completionDue on project completionDue on project completionDue on project completion",
+  //         },
+  //       ],
+  //     },
+  //     items: [
+  //       {
+  //         description: "Website Development",
+  //         hsnCode: "998313",
+  //         quantity: 1,
+  //         rate: 4000,
+  //         amount: 4000,
+  //         percentage: 18,
+  //         igstAmount: 720,
+  //       },
+  //       {
+  //         description: "Domain & Hosting",
+  //         hsnCode: "998314",
+  //         quantity: 1,
+  //         rate: 1000,
+  //         amount: 1000,
+  //         percentage: 18,
+  //         igstAmount: 180,
+  //       },
+  //     ],
+  //     subTotal: 5000,
+  //     igstAmount: 900,
+  //     amountWithheld: 0,
+  //     totalAmount: 5900,
+  //     dueAmount: 2500,
+  //   },
+  // }
 
   // const [invoice,setInvoice ]=useState({})
   const { fields: itemFields, append: appendItem } = useFieldArray({
@@ -180,26 +182,25 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
       return { amount, igstAmount };
     });
 
-  
     setValue("subTotal", subTotal);
     setValue("igstAmount", totalIgst);
   }, [items, setValue]);
 
   useEffect(() => {
     const subTotal = watch("subTotal") || 0;
-    const subgst=watch("igstAmount")||0;
+    const subgst = watch("igstAmount") || 0;
     // const igstAmount = watch("igstAmount") || 0;
     const firstInstallment = watch("paymentTerms.totalAmount") || 0;
 
-    const totalAmount = subTotal +subgst -amountWithheld;
-    const dueAmount = firstInstallment-totalAmount +subgst -amountWithheld;
+    const totalAmount = subTotal + subgst - amountWithheld;
+    const dueAmount = firstInstallment - totalAmount + subgst - amountWithheld;
 
     setValue("totalAmount", totalAmount);
-    setValue("dueAmount", (dueAmount));
+    setValue("dueAmount", dueAmount);
   }, [
     watch("subTotal"),
     watch("igstAmount"),
-    watch("paymentTerms.totalAmount") ,
+    watch("paymentTerms.totalAmount"),
     amountWithheld,
     installments,
     setValue,
@@ -271,7 +272,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
             "Content-Type": "application/json",
           },
           withCredentials: true, // If needed for auth/session
-        }
+        },
       );
       // setInvoice(res.data?.data)
       generateInvoicePDF(res.data?.data);
@@ -408,7 +409,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
                 placeholder="Title"
                 isRequired={false}
                 {...register(
-                  `paymentTerms.installments.${index}.installmentTitle`
+                  `paymentTerms.installments.${index}.installmentTitle`,
                 )}
               />
               <TextInput
@@ -416,7 +417,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
                 type="number"
                 isRequired={false}
                 {...register(
-                  `paymentTerms.installments.${index}.installmentAmount`
+                  `paymentTerms.installments.${index}.installmentAmount`,
                 )}
               />
               <TextInput
