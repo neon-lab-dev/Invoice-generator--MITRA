@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray,useWatch } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { FiX } from "react-icons/fi";
 import TextInput from "../../../components/Reusable/TextInput/TextInput";
 import { toast } from "sonner";
@@ -9,7 +9,6 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import type { InvoiceFormData } from "./AddInvoiceModal";
 import SelectInput from "../../../components/Reusable/SelectInput/SelectInput";
-import { generateInvoicePDF } from "../../../utils/InvoiceFormat";
 
 interface UpdateInvoiceModalProps {
   invoiceId: string;
@@ -56,8 +55,8 @@ const UpdateInvoiceModal: React.FC<UpdateInvoiceModalProps> = ({
     name: "items",
   });
   const items = useWatch({ control, name: "items" });
-const installments = useWatch({ control, name: "paymentTerms.installments" });
-const amountWithheld = watch("amountWithheld") || 0;
+  const installments = useWatch({ control, name: "paymentTerms.installments" });
+  const amountWithheld = watch("amountWithheld") || 0;
   const { fields: installmentFields, append: appendInstallment } =
     useFieldArray({
       control,
@@ -78,7 +77,7 @@ const amountWithheld = watch("amountWithheld") || 0;
               Authorization: `Bearer ${token}`,
             },
             withCredentials: true,
-          }
+          },
         );
         const invoice = res.data?.invoice;
         // console.log(invoice);
@@ -124,7 +123,8 @@ const amountWithheld = watch("amountWithheld") || 0;
         });
         if (!invoice.invoiceItems?.length) appendItem({});
         if (!invoice.installments?.length) appendInstallment({});
-      } catch (err) {
+      } catch (err: any) {
+        console.log(err);
         toast.error("Failed to fetch invoice data");
         onClose();
       } finally {
@@ -164,25 +164,25 @@ const amountWithheld = watch("amountWithheld") || 0;
   }, [items, setValue]);
 
   useEffect(() => {
-  const subTotal = watch("subTotal") || 0;
-  const subgst=watch("igstAmount")||0;
-  // const igstAmount = watch("igstAmount") || 0;
-  const totalInstallmentsAmount = watch("paymentTerms.totalAmount") || 0;
-   
+    const subTotal = watch("subTotal") || 0;
+    const subgst = watch("igstAmount") || 0;
+    // const igstAmount = watch("igstAmount") || 0;
+    const totalInstallmentsAmount = watch("paymentTerms.totalAmount") || 0;
 
-   const totalAmount = subTotal +subgst -amountWithheld;
-    const dueAmount = totalInstallmentsAmount-totalAmount +subgst -amountWithheld;
+    const totalAmount = subTotal + subgst - amountWithheld;
+    const dueAmount =
+      totalInstallmentsAmount - totalAmount + subgst - amountWithheld;
 
-  setValue("totalAmount", totalAmount);
-  setValue("dueAmount", dueAmount);
-}, [
-  watch("subTotal"),
-  watch("igstAmount"),
-  watch("paymentTerms.totalAmount"),
-  amountWithheld,
-  installments,
-  setValue,
-]);
+    setValue("totalAmount", totalAmount);
+    setValue("dueAmount", dueAmount);
+  }, [
+    watch("subTotal"),
+    watch("igstAmount"),
+    watch("paymentTerms.totalAmount"),
+    amountWithheld,
+    installments,
+    setValue,
+  ]);
 
   const onSubmit = async (data: InvoiceFormData) => {
     const toastId = toast.loading("Updating invoice...");
@@ -206,7 +206,7 @@ const amountWithheld = watch("amountWithheld") || 0;
         })),
         invoiceItems: data.items.map((item) => ({
           item: item.description,
-          hsn: item.hsnCode,
+          // hsn: item.hsnCode,
           qty: item.quantity,
           rate: item.rate,
           amount: item.amount,
@@ -217,7 +217,7 @@ const amountWithheld = watch("amountWithheld") || 0;
         dueAmount: data.dueAmount,
       };
       const token = Cookies.get("token");
-      const res = await axios.put(
+      await axios.put(
         `https://invoice-chi-five.vercel.app/api/v1/invoice/${invoiceId}`,
         payload,
         {
@@ -226,10 +226,9 @@ const amountWithheld = watch("amountWithheld") || 0;
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
-        }
+        },
       );
-      if(res.status === 200)  generateInvoicePDF(res.data?.updatedInvoice);
-      
+
       toast.success("Invoice updated successfully!", { id: toastId });
       onClose();
 
@@ -360,14 +359,14 @@ const amountWithheld = watch("amountWithheld") || 0;
                 <TextInput
                   placeholder="Title"
                   {...register(
-                    `paymentTerms.installments.${index}.installmentTitle`
+                    `paymentTerms.installments.${index}.installmentTitle`,
                   )}
                 />
                 <TextInput
                   placeholder="Amount"
                   type="number"
                   {...register(
-                    `paymentTerms.installments.${index}.installmentAmount`
+                    `paymentTerms.installments.${index}.installmentAmount`,
                   )}
                 />
                 <TextInput
@@ -392,10 +391,10 @@ const amountWithheld = watch("amountWithheld") || 0;
                   placeholder="Description"
                   {...register(`items.${index}.description`)}
                 />
-                <TextInput
+                {/* <TextInput
                   placeholder="HSN Code"
                   {...register(`items.${index}.hsnCode`)}
-                />
+                /> */}
                 <TextInput
                   placeholder="Quantity"
                   type="number"

@@ -14,24 +14,38 @@ interface TextInputProps {
   isDisabled?: boolean;
   isRequired?: boolean;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  isDecimal?: boolean;
 }
 
 const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
-  ({ label, name, placeholder = "", type = "text", error, defaultValue, isDisabled = false, isRequired = true, onKeyDown, ...rest }, ref) => {
+  (
+    {
+      label,
+      isDecimal,
+      name,
+      placeholder = "",
+      type = "text",
+      error,
+      defaultValue,
+      isDisabled = false,
+      isRequired = true,
+      onKeyDown,
+      ...rest
+    },
+    ref,
+  ) => {
     return (
       <div className="flex flex-col gap-2 font-Inter w-full">
         <label htmlFor={name} className="block text-gray-700 font-medium">
           {label}
-          {
-            isRequired &&
-            <span className="text-red-600"> *</span>
-          }
+          {isRequired && <span className="text-red-600"> *</span>}
         </label>
         <input
           required={isRequired}
           id={name}
           name={name}
-          type={type}
+          type={isDecimal ? "text" : type}
+          inputMode={isDecimal ? "decimal" : undefined}
           placeholder={placeholder}
           defaultValue={defaultValue}
           onKeyDown={onKeyDown}
@@ -45,7 +59,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 TextInput.displayName = "TextInput";

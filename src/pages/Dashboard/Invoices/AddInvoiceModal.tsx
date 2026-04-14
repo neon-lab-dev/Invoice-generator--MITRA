@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useForm, useFieldArray, useWatch } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { FiX } from "react-icons/fi";
 import TextInput from "../../../components/Reusable/TextInput/TextInput";
 import { toast } from "sonner";
 import SelectInput from "../../../components/Reusable/SelectInput/SelectInput";
-import { generateInvoicePDF } from "../../../utils/InvoiceFormat";
 import axios from "axios";
-import { useEffect } from "react";
 
 export interface Installment {
   installmentTitle?: string;
@@ -16,7 +14,7 @@ export interface Installment {
 
 export interface InvoiceItem {
   description?: string;
-  hsnCode?: string;
+  // hsnCode?: string;
   quantity?: number;
   rate?: number;
   amount?: number;
@@ -59,14 +57,6 @@ interface AddInvoiceModalProps {
   onClose: () => void;
 }
 
-const STATES = [
-  "Maharashtra",
-  "Gujarat",
-  "Delhi",
-  "Karnataka",
-  "Tamil Nadu",
-  "Kerala",
-];
 const TERMS = ["Due on Receipt", "Net 15", "Net 30", "Net 60"];
 const INVOICE_TYPES = ["Project", "Course"];
 
@@ -76,135 +66,12 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
     handleSubmit,
     control,
     reset,
-    setValue,
-    watch,
     formState: { errors },
   } = useForm<InvoiceFormData>();
-  //   {
-  //   defaultValues: {
-  //     invoiceType: "Project",
-  //     invoiceDate: "2025-07-08",
-  //     dueDate: "2025-07-15",
-  //     terms: "Net 15",
-  //     notes: "This is a test invoice for preview purposes.",
-  //     placeOfSupply: "Maharashtra",
-  //     billTo: {
-  //       name: "John Doe",
-  //       address: "123, Baker Street",
-  //       city: "Mumbai",
-  //       state: "Maharashtra",
-  //       pinCode: "400001",
-  //       country: "India",
-  //       gstin: "27ABCDE1234F1Z5",
-  //     },
-  //     shipTo: {
-  //       name: "Jane Smith",
-  //       address: "456, Market Street",
-  //       city: "Pune",
-  //       state: "Maharashtra",
-  //       pinCode: "411001",
-  //       country: "India",
-  //       gstin: "27ABCDE5678G1Z9",
-  //     },
-  //     paymentTerms: {
-  //       totalAmount: 5000,
-  //       installments: [
-  //         {
-  //           installmentTitle: "Advance",
-  //           installmentAmount: 2500,
-  //           details: "Paid before starting project",
-  //         },
-  //         {
-  //           installmentTitle: "Final Payment",
-  //           installmentAmount: 2500,
-  //           details:
-  //             "Due on project completion Due on project completionDue on project completionDue on project completionDue on project completion",
-  //         },
-  //       ],
-  //     },
-  //     items: [
-  //       {
-  //         description: "Website Development",
-  //         hsnCode: "998313",
-  //         quantity: 1,
-  //         rate: 4000,
-  //         amount: 4000,
-  //         percentage: 18,
-  //         igstAmount: 720,
-  //       },
-  //       {
-  //         description: "Domain & Hosting",
-  //         hsnCode: "998314",
-  //         quantity: 1,
-  //         rate: 1000,
-  //         amount: 1000,
-  //         percentage: 18,
-  //         igstAmount: 180,
-  //       },
-  //     ],
-  //     subTotal: 5000,
-  //     igstAmount: 900,
-  //     amountWithheld: 0,
-  //     totalAmount: 5900,
-  //     dueAmount: 2500,
-  //   },
-  // }
-
-  // const [invoice,setInvoice ]=useState({})
   const { fields: itemFields, append: appendItem } = useFieldArray({
     control,
     name: "items",
   });
-  const items = useWatch({ control, name: "items" });
-  const installments = useWatch({ control, name: "paymentTerms.installments" });
-  const amountWithheld = watch("amountWithheld") || 0;
-
-  useEffect(() => {
-    if (!items) return;
-
-    let subTotal = 0;
-    let totalIgst = 0;
-
-    items.map((item, index) => {
-      const quantity = Number(item.quantity || 0);
-      const rate = Number(item.rate || 0);
-      const amount = quantity * rate;
-      const gstPercent = Number(item.percentage || 0);
-      const igstAmount = (amount * gstPercent) / 100;
-
-      subTotal += amount;
-      totalIgst += igstAmount;
-
-      // Update amount and igstAmount in form
-      setValue(`items.${index}.amount`, amount);
-      setValue(`items.${index}.igstAmount`, igstAmount);
-
-      return { amount, igstAmount };
-    });
-
-    setValue("subTotal", subTotal);
-    setValue("igstAmount", totalIgst);
-  }, [items, setValue]);
-
-  useEffect(() => {
-    const subTotal = watch("subTotal") || 0;
-    const subgst = watch("igstAmount") || 0;
-    // const igstAmount = watch("igstAmount") || 0;
-    const firstInstallment = watch("paymentTerms.totalAmount") || 0;
-
-    const totalAmount = subTotal + subgst - amountWithheld;
-    const dueAmount = firstInstallment - totalAmount + subgst - amountWithheld;
-
-    setValue("totalAmount", totalAmount);
-    setValue("dueAmount", dueAmount);
-  }, [
-    watch("subTotal"),
-    watch("igstAmount"),
-    watch("paymentTerms.totalAmount"),
-    amountWithheld,
-    installments,
-    setValue,
-  ]);
 
   const { fields: installmentFields, append: appendInstallment } =
     useFieldArray({
@@ -253,7 +120,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
         })),
         invoiceItems: data.items.map((item) => ({
           item: item.description,
-          hsn: item.hsnCode,
+          // hsn: item.hsnCode,
           qty: item.quantity,
           rate: item.rate,
           amount: item.amount,
@@ -264,7 +131,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
         dueAmount: data.dueAmount,
       };
 
-      const res = await axios.post(
+      await axios.post(
         "https://invoice-chi-five.vercel.app/api/v1/invoice/create",
         payload,
         {
@@ -274,11 +141,8 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
           withCredentials: true, // If needed for auth/session
         },
       );
-      // setInvoice(res.data?.data)
-      generateInvoicePDF(res.data?.data);
-      // generateInvoicePDF(data)
-      console.log(res.data?.data);
       toast.success("Invoice created successfully!", { id: toastId });
+      window.location.reload();
 
       // Optional: Reset or close modal
       reset();
@@ -361,11 +225,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
             )}
           </div>
 
-          <SelectInput
-            label="Place of Supply"
-            options={STATES.map((state) => ({ label: state, value: state }))}
-            {...register("placeOfSupply")}
-          />
+          <TextInput label="Place of Supply" {...register("placeOfSupply")} />
 
           {/* Bill To */}
           <div>
@@ -440,13 +300,14 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
           {itemFields.map((field, index) => (
             <div key={field.id} className="grid grid-cols-4 gap-4">
               <TextInput
+                label="Description"
                 placeholder="Description"
                 {...register(`items.${index}.description`)}
               />
-              <TextInput
+              {/* <TextInput
                 placeholder="HSN Code"
                 {...register(`items.${index}.hsnCode`)}
-              />
+              /> */}
               <TextInput
                 placeholder="Quantity"
                 type="number"
@@ -469,7 +330,8 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
               />
               <TextInput
                 placeholder="IGST Amt"
-                type="number"
+                type="text"
+                isDecimal={true}
                 {...register(`items.${index}.igstAmount`)}
               />
             </div>
@@ -487,26 +349,31 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
             <TextInput
               label="Sub Total"
               type="number"
+              isDecimal={true}
               {...register("subTotal")}
             />
             <TextInput
               label="IGST Amount"
               type="number"
+              isDecimal={true}
               {...register("igstAmount")}
             />
             <TextInput
               label="Amount Withheld"
               type="number"
+              isDecimal={true}
               {...register("amountWithheld")}
             />
             <TextInput
               label="Total Amount"
               type="number"
+              isDecimal={true}
               {...register("totalAmount")}
             />
             <TextInput
               label="Due Amount"
               type="number"
+              isDecimal={true}
               {...register("dueAmount")}
             />
           </div>

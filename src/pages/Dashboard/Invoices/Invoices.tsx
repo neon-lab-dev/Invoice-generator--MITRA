@@ -8,7 +8,8 @@ import UpdateInvoiceModal, { formatDate } from "./UpdateInvoiceModal";
 import AddInvoiceModal from "./AddInvoiceModal";
 import axios from "axios";
 import type { TInvoice } from "../../../types/invoicedata.types";
-import { generateInvoicePDF } from "../../../utils/InvoiceFormat";
+import { pdf } from "@react-pdf/renderer";
+import InvoicePdf from "../../../components/Dashboard/InvoicePage/InvoicePdf/InvoicePdf";
 
 const Invoices = () => {
   const { register, watch } = useForm({ defaultValues: { search: "" } });
@@ -19,16 +20,16 @@ const Invoices = () => {
   const [isFetchingUserById, setIsFetchingUserById] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(
-    null
+    null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddPeopleModalOpen, setIsAddPeopleModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<TInvoice | null>(null);
-  const [isDownload, setIsDownload] = useState(false);
+  console.log(selectedInvoice);
   const token = Cookies.get("accessToken");
 
   // Fetch user by ID
-  const fetchUserById = async (invoiceId: string) => {
+  const fetchInvoiceById = async (invoiceId: string) => {
     setIsFetchingUserById(true);
 
     try {
@@ -39,13 +40,12 @@ const Invoices = () => {
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
-        }
+        },
       );
       setSelectedInvoice(res.data?.invoice);
-      console.log(selectedInvoice);
-      if (isDownload) generateInvoicePDF(res.data?.invoice);
 
       setIsModalOpen(true);
+      return res.data?.invoice;
     } catch (err) {
       console.error("Failed to fetch user by ID:", err);
       toast.error("Failed to fetch user data");
@@ -65,7 +65,7 @@ const Invoices = () => {
               Authorization: `Bearer ${token}`,
             },
             withCredentials: true,
-          }
+          },
         );
 
         // Set state with invoices array
@@ -80,11 +80,7 @@ const Invoices = () => {
     if (token) {
       fetchInvoices();
     }
-  }, [token, invoices]);
-
-  useEffect(() => {
-    console.log("");
-  }, [invoices]);
+  }, [token]);
 
   const deleteUser = async (invoiceId: string) => {
     const toastId = toast.loading("Deleting invoice...");
@@ -99,7 +95,7 @@ const Invoices = () => {
             "Content-Type": "application/json",
           },
           credentials: "include",
-        }
+        },
       );
 
       if (!res.ok) {
@@ -140,6 +136,51 @@ const Invoices = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownOpen]);
+
+  const [isGeneratingInvoice, setIsGeneratingInvoice] =
+    useState<boolean>(false);
+
+  const handleDownloadInvoice = async (invoiceId: string) => {
+    setIsGeneratingInvoice(true);
+    try {
+      // Get the invoice data directly from the API response
+      const res = await axios.get(
+        `https://invoice-chi-five.vercel.app/api/v1/invoice/${invoiceId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        },
+      );
+
+      const invoiceData = res.data?.invoice;
+
+      if (!invoiceData) {
+        toast.error("Failed to fetch invoice data");
+        return;
+      }
+
+      console.log(invoiceData);
+
+      // Generate PDF with the fetched data
+      const blob = await pdf(<InvoicePdf invoice={invoiceData} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoice_${invoiceData.customInvoiceId || invoiceId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success("PDF downloaded successfully");
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+      toast.error("Failed to generate PDF");
+    } finally {
+      setIsGeneratingInvoice(false);
+    }
+  };
   return (
     <div className="mt-5 max-w-full">
       <div className="mb-4 flex items-center gap-5 justify-end w-full">
@@ -247,12 +288,16 @@ const Invoices = () => {
                               <button
                                 className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-red-50 cursor-pointer"
                                 onClick={() => {
-                                  setIsDownload(true);
-                                  fetchUserById(invoice?._id || "");
+                                  handleDownloadInvoice(invoice?._id);
                                 }}
                               >
-
-                               {isFetchingUserById ? "loading...":<span className="flex items-center"><FiDownload className="mr-2" /> Download</span> }
+                                {isGeneratingInvoice ? (
+                                  "loading..."
+                                ) : (
+                                  <span className="flex items-center">
+                                    <FiDownload className="mr-2" /> Download
+                                  </span>
+                                )}
                               </button>
                             </li>
                             <li>
@@ -260,7 +305,7 @@ const Invoices = () => {
                                 className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                                 onClick={() => {
                                   setSelectedInvoiceId(invoice?._id);
-                                  fetchUserById(invoice?._id);
+                                  fetchInvoiceById(invoice?._id);
                                   setIsModalOpen(true);
                                   setDropdownOpen(null);
                                 }}
@@ -273,7 +318,7 @@ const Invoices = () => {
                                 className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer"
                                 onClick={() => {
                                   const confirmDelete = confirm(
-                                    `Are you sure you want to delete ${invoice.customInvoiceId}?`
+                                    `Are you sure you want to delete ${invoice.customInvoiceId}?`,
                                   );
                                   if (confirmDelete) {
                                     deleteUser(invoice?._id || "");
