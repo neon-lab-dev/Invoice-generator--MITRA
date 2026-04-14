@@ -276,6 +276,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
                 placeholder="Amount"
                 type="number"
                 isRequired={false}
+                isDecimal={true}
                 {...register(
                   `paymentTerms.installments.${index}.installmentAmount`,
                 )}
