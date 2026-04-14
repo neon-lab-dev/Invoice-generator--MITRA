@@ -316,17 +316,20 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
               />
               <TextInput
                 placeholder="Rate"
+                isDecimal={true}
                 type="number"
                 {...register(`items.${index}.rate`)}
               />
               <TextInput
                 placeholder="Amount"
                 type="number"
+                isDecimal={true}
                 {...register(`items.${index}.amount`)}
               />
               <TextInput
                 placeholder="GST %"
                 type="number"
+                isDecimal={true}
                 {...register(`items.${index}.percentage`)}
               />
               <TextInput
