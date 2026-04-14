@@ -382,7 +382,7 @@ const AddInvoiceModal: React.FC<AddInvoiceModalProps> = ({ onClose }) => {
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-primary-10 hover:bg-[#244F5B] text-white py-2 px-4 rounded-md"
+            className="w-full bg-primary-10 hover:bg-[#244F5B] text-white py-2 px-4 rounded-md cursor-pointer"
           >
             Create Invoice
           </button>
